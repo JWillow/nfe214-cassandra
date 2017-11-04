@@ -1,4 +1,4 @@
-package org.homework.bigdata.nfe214.model
+package org.homework.bigdata.nfe214.cours.model
 
 import com.datastax.driver.core.Session
 

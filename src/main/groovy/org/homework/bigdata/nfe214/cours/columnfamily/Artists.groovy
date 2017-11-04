@@ -1,7 +1,7 @@
-package org.homework.bigdata.nfe214.columnfamily
+package org.homework.bigdata.nfe214.cours.columnfamily
 
 import com.datastax.driver.core.Session
-import org.homework.bigdata.nfe214.model.Artist
+import org.homework.bigdata.nfe214.cours.model.Artist
 
 class Artists {
 

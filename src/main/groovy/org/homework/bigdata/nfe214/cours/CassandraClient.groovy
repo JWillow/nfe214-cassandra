@@ -1,10 +1,12 @@
-package org.homework.bigdata.nfe214
+package org.homework.bigdata.nfe214.cours
 
 import com.datastax.driver.core.Session
-import org.homework.bigdata.nfe214.columnfamily.Artists
-import org.homework.bigdata.nfe214.columnfamily.Movies
-import org.homework.bigdata.nfe214.model.Artist
-import org.homework.bigdata.nfe214.model.Movie
+import org.homework.bigdata.nfe214.CassandraConnector
+import org.homework.bigdata.nfe214.KeyspaceRepository
+import org.homework.bigdata.nfe214.cours.columnfamily.Artists
+import org.homework.bigdata.nfe214.cours.columnfamily.Movies
+import org.homework.bigdata.nfe214.cours.model.Artist
+import org.homework.bigdata.nfe214.cours.model.Movie
 
 class CassandraClient {
     // docker run --name remy-cassandra -p 9042:9042 -d cassandra

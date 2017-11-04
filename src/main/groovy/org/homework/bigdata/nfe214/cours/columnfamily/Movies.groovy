@@ -1,4 +1,4 @@
-package org.homework.bigdata.nfe214.columnfamily
+package org.homework.bigdata.nfe214.cours.columnfamily
 
 import com.datastax.driver.core.Session
 
