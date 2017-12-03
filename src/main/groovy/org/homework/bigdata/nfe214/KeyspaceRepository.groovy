@@ -1,6 +1,5 @@
 package org.homework.bigdata.nfe214
 
-import com.datastax.driver.core.ResultSet
 import com.datastax.driver.core.Session
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory

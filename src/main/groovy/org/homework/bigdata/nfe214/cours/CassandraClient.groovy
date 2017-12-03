@@ -37,7 +37,7 @@ class CassandraClient {
 
         kRepo.use("movie")
         Artists.createTable(session)
-        /*Artists.insertFromJSON(session, """
+        /*Inspection.insertFromJSON(session, """
             {
                  "id": "a1",
                  "last_name": "Coppola",
