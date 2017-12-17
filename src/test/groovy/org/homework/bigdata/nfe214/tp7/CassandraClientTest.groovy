@@ -170,6 +170,7 @@ class CassandraClientTest extends Specification {
     /*
     SELECT Name FROM Restaurant WHERE borough='BROOKLYN' ;
      */
+
     def "12 - Pour la requête ci-dessous faites en sorte qu’elle soit exécutable sans ALLOW FILTERING"() {
         setup:
         session.execute("""
@@ -200,5 +201,151 @@ class CassandraClientTest extends Specification {
         resultSet.each {
             println it
         }
+    }
+
+    def "2-1-1 - Modele de données"() {
+        when:
+        session.execute("""
+            CREATE TYPE Restaurant (
+                Name VARCHAR, borough VARCHAR, BuildingNum VARCHAR, Street VARCHAR,
+               ZipCode INT, Phone VARCHAR, CuisineType VARCHAR);
+        """)
+        session.execute("""
+            CREATE TABLE InspectionRestaurant (
+               idRestaurant INT, InspectionDate date, ViolationCode VARCHAR,
+               ViolationDescription VARCHAR, CriticalFlag VARCHAR, Score INT,
+               GRADE VARCHAR, Restaurant frozen<Restaurant>,
+              PRIMARY KEY ( idRestaurant, InspectionDate )
+             );
+        """)
+
+        then:
+        assert true
+    }
+
+    def "2-1-2 - Insertion de données dans le modèle"() {
+        setup:
+        session.execute("""
+            INSERT INTO InspectionRestaurant JSON ' {"idRestaurant":40373938,
+               "restaurant": {"name":"IHOP", "borough":"BRONX", "buildingnum":"5655",
+                              "street":"BROADWAY", "zipcode":"10463",
+                              "phone":"7185494565", "cuisineType":"American"},
+              "inspectionDate":"2016-08-16",
+              "violationCode":"04L",
+              "violationDescription": "On voit des sourtis!.",
+              "criticalFlag": "Critical",
+              "score":15,
+              "grade":"A"}';
+        """)
+
+        when:
+        def resultSet = session.execute("Select * from InspectionRestaurant")
+
+        then:
+        resultSet != null
+        resultSet.each {
+            println it
+        }
+    }
+
+    def "2-1-3 - Création d'un index"() {
+        setup:
+        session.execute("""
+            CREATE INDEX IF NOT EXISTS InspectionRestaurant_grade ON InspectionRestaurant ( Grade ) ;
+        """)
+
+        when:
+        def resultSet = session.execute("Select Restaurant from InspectionRestaurant where grade='A'")
+
+        then:
+        resultSet != null
+        resultSet.each {
+            println it
+        }
+    }
+
+    def "2-2-1"() {
+        when:
+        session.execute("""
+            CREATE TYPE Inspection (
+              ViolationCode VARCHAR,
+              ViolationDescription VARCHAR, CriticalFlag VARCHAR, Score INT, GRADE VARCHAR,
+            ) ;
+        """)
+        session.execute("""
+            CREATE TABLE RestaurantInspections (
+               id INT, Name VARCHAR, borough VARCHAR, BuildingNum VARCHAR, Street VARCHAR,
+               ZipCode INT, Phone VARCHAR, CuisineType VARCHAR,
+               Inspections map<text, frozen<Inspection>>,
+               PRIMARY KEY (id)
+            );
+        """)
+
+        then:
+        assert true
+    }
+
+
+    def "2-2-2 - Insertion de données dans le modèle"() {
+        setup:
+        session.execute("""
+            INSERT INTO RestaurantInspections JSON ' {"id":40373938,
+             "name":"IHOP", "borough":"BRONX", "buildingnum":"5655", "street":"BROADWAY",
+             "zipcode":"10463", "phone":"7185494565", "cuisineType":"American",
+             "inspections":{
+                "2016-08-16":{"violationCode":"04L", "violationDescription":
+                  "Evidence of mice.",
+                  "criticalFlag":"Critical", "score":15, "grade":""},
+                "2014-02-20":{"violationCode":"08C", "violationDescription":
+                  "Pesticide used!",
+                  "criticalFlag":"Not Critical", "score":7, "grade":""},
+                "2014-03-11":{"violationCode":"10B", "violationDescription":
+                  "Plumbing not properly installed.",
+                  "criticalFlag":"Not Critical", "score":12, "grade":"A"}
+              }}';
+        """)
+
+        when:
+        def resultSet = session.execute("Select * from RestaurantInspections")
+
+        then:
+        resultSet != null
+        resultSet.each {
+            println it
+        }
+    }
+
+    def "2-2-4 - Trouver tous les restaurants du Bronx"() {
+        when:
+        def resultSet = session.execute("select * from RestaurantInspections where borough = 'BRONX' allow filtering")
+
+        then:
+        assert resultSet != null
+        resultSet.each {
+            println ">>>> $it"
+        }
+    }
+
+    def "2-2-5 - Trouver tous les restaurants du Bronx"() {
+        when:
+        def resultSet = session.execute("select * from RestaurantInspections where borough = 'BRONX' allow filtering")
+
+        then:
+        assert resultSet != null
+        resultSet.each {
+            println ">>>> $it"
+        }
+    }
+    /**
+     * CREATE INDEX RestaurantInspections_Grade ON RestaurantInspections ( VALUE(Inspections) ) ;
+     */
+    def "Create index on MAP"() {
+        when:
+        session.execute("CREATE INDEX IF NOT EXISTS RestaurantInspections_entries ON RestaurantInspections ( VALUES(Inspections) ) ;")
+
+        def resultSet = session.execute("Select * from RestaurantInspections where inspections CONTAINS '{grade:'A'}")
+
+        then:
+        resultSet.each { print ">>>>>>> $it"}
     }
 }
